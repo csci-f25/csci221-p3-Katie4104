@@ -136,9 +136,22 @@ struct node* findKthLargest(struct node* root, int k) {
     // TODO: Implement using reverse in-order traversal 
     // Hints:
     //  - Use a static or reference counter that decrements each visit.
+
+	static int count = 0;
+	if (root == NULL) return NULL;
+	
+	struct node* right = findKthLargest(root->right, k);
+	if (right != NULL) return right;
+	
+	count++;
+	if (count == k) return root;
+	
+	return findKthLargest(root->left, k); }
+	
+	
+
     //  - When counter reaches 0, return the current node.
-    return NULL; // placeholder
-}
+
 
 // ===============================================
 // 2. Find minimum absolute difference between any
@@ -151,8 +164,22 @@ int getMinimumDifference(struct node* root) {
     // Hints:
     //  - Keep track of previous nodes value (prev).
     //  - Compare abs(current - prev) at each step and update minDiff.
-    return -1; // placeholder
-}
+	static int prev = -1;
+	static int minDiff = INT_MAX;
+
+	if (root == NULL) return minDiff;
+
+	getMinimumDifference(root->left);
+
+	int diff = abs(root->data - prev);
+        if (diff < minDiff){
+		minDiff = diff; }
+
+	prev = root->data;
+
+	getMinimumDifference(root->right);
+
+	return minDiff; }
 
 // ===============================================
 // 3. Delete a node by value
@@ -169,8 +196,31 @@ struct node* deleteNode(struct node** rootRef, int data) {
     //     - One child: replace node with child.
     //     - Two children: find inorder successor (min node in right subtree),
     //       copy successors data, and delete that successor.
-    return NULL; // placeholder
-}
+
+	if (*rootRef == NULL) return NULL;
+
+	struct node* root = *rootRef;
+
+	if(data < root->data) {
+		return deleteNode(&(root->left), data); }
+
+	else if (data > root->data){
+		return deleteNode(&(root->right), data); }
+
+	else {
+		if (root->left == NULL && root->right == NULL){
+			*rootRef = NULL;
+			return root; }
+
+		else if(root->left == NULL){
+			*rootRef = root->right;
+			return root; }
+
+		else {
+			struct node* successor = findMinValueNode(root->right);
+			root->data = successor->data;
+			return deleteNode(&(root->right), successor->data); } } }
+
 
 // ===============================================
 // 4. Delete all nodes
@@ -182,7 +232,14 @@ void deleteTree(struct node** rootRef) {
     //  1. Delete left subtree.
     //  2. Delete right subtree.
     //  3. Delete current node and set root to NULL.
-}
+	if(*rootRef == NULL) return;
+	
+	deleteTree(&((*rootRef)->left));
+	deleteTree(&((*rootRef)->right));
+
+	delete *rootRef;
+	*rootRef = NULL; }
+
 
 int main() {
     struct node* root = NULL;
@@ -205,9 +262,10 @@ int main() {
 
     // Delete node
     cout << "\nDeleting node with value 20..." << endl;
-    struct node* deleted = deleteNode(&root, 20);
+    int delNum = 20;
+    struct node* deleted = deleteNode(&root, delNum);
     if (deleted != NULL){
-      cout << "Deleted node had value: " << deleted->data << endl;
+      cout << "Deleted node had value: " << delNum << endl;
       cout << "After deletion (In-Order): ";  printTreeInOrder(root);  cout << endl;
     }
 
